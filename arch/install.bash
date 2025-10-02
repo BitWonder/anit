@@ -34,19 +34,22 @@ if ! command -v paru >/dev/null 2>&1; then
   dialog --title "Error" --msgbox "Unable to install paru!" 15 50
   exit 1
 fi
+#
+# Define the non-root user to run paru as:
+NONROOT_USER=${SUDO_USER:-$(logname)}
 
 cd ..
 # paru should know about itself
-paru -S paru 2>&1 | dialog --progressbox 30 100
+sudo -u "$NONROOT_USER" paru -S paru --noconfirm 2>&1 | dialog --progressbox 30 100
 # scary
 rm -rf paru/
 
 # install hyprland
-paru -S hyprland hypridle hyprpaper hyprpicker hyprlock xdg-desktop-portal-hyprland hyprsunset hyprpolkitagent hyprsysteminfo hyprland-qt-support hyprqt6engine hyprcursor hyprutils hyprlang hyprwayland-scanner aquamarine hyprgraphics hyprland-qtutils 2>&1 | dialog --progressbox 30 100
+sudo -u "$NONROOT_USER" paru -S hyprland hypridle hyprpaper hyprpicker hyprlock xdg-desktop-portal-hyprland hyprsunset hyprpolkitagent hyprsysteminfo hyprland-qt-support hyprqt6engine hyprcursor hyprutils hyprlang hyprwayland-scanner aquamarine hyprgraphics hyprland-qtutils --noconfirm 2>&1 | dialog --progressbox 30 100
 
 # install audio
-paru -S pipewire 2>&1 | dialog --progressbox 30 100
+sudo -u "$NONROOT_USER" paru -S pipewire --noconfirm 2>&1 | dialog --progressbox 30 100
 systemctl enable pipewire --now 2>&1 | dialog --progressbox 30 100
 
 # install notification daemon
-paru -S dunst ttf-fira-code quickshell 2>&1 | dialog --progressbox 30 100
+sudo -u "$NONROOT_USER" paru -S dunst ttf-fira-code quickshell --noconfirm 2>&1 | dialog --progressbox 30 100
