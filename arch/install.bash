@@ -3,42 +3,50 @@ set -e # exit on error
 # Color Constants
 RESET_COLOR="\033[0m"
 BLUE="\033[0;34m"
+RED="\033[0;31m"
+
+# run as root
+# https://stackoverflow.com/questions/18215973/how-to-check-if-running-as-root-in-a-bash-script
+if [ "$EUID" -ne 0 ]; then
+  printf "${RED}Must be root to run this script!${RESET_COLOR}"
+  exit
+fi
+
+# install dialog for fun interaction
+printf "Installing Dialog for user selection"
+pacman -S dialog
 
 # make sure that the system is up todate
-printf "${BLUE}Updating System:${RESET_COLOR}\n"
-sudo pacman -Syu
+pacman -Syu --noconfirm 2>&1 | dialog --progressbox 30 100
 
 # install git so we can install things from github
 printf "\n${BLUE}Installing Git:${RESET_COLOR}\n"
-sudo pacman -S git
+pacman -S git --noconfirm 2>&1 | dialog --progressbox 30 100
 
 # install paru for package managment
-sudo pacman -S --needed base-devel
-git clone https://aur.archlinux.org/paru.git
+pacman -S --needed base-devel --noconfirm 2>&1 | dialog --progressbox 30 100
+git clone https://aur.archlinux.org/paru.git 2>&1 | dialog --progressbox 30 100
 cd paru
-makepkg -si
+makepkg -si 2>&1 | dialog --progressbox 20 100
 
 if ! command -v paru >/dev/null 2>&1; then
-  printf "The making of paru failed! Exiting!"
+  # dialog half the size
+  dialog --title "Error" --msgbox "Unable to install paru!" 15 50
   exit 1
 fi
 
 cd ..
+# paru should know about itself
+paru -S paru 2>&1 | dialog --progressbox 30 100
 # scary
 rm -rf paru/
 
 # install hyprland
-paru -S hyprland hypridle hyprpaper hyprpicker hyprlock xdg-desktop-portal-hyprland hyprsunset hyprpolkitagent hyprsysteminfo hyprland-qt-support hyprqt6engine hyprcursor hyprutils hyprlang hyprwayland-scanner aquamarine hyprgraphics hyprland-qtutils
+paru -S hyprland hypridle hyprpaper hyprpicker hyprlock xdg-desktop-portal-hyprland hyprsunset hyprpolkitagent hyprsysteminfo hyprland-qt-support hyprqt6engine hyprcursor hyprutils hyprlang hyprwayland-scanner aquamarine hyprgraphics hyprland-qtutils 2>&1 | dialog --progressbox 30 100
 
 # install audio
-paru -S pipewire
-sudo systemctl enable pipewire --now
+paru -S pipewire 2>&1 | dialog --progressbox 30 100
+systemctl enable pipewire --now 2>&1 | dialog --progressbox 30 100
 
 # install notification daemon
-paru -S dunst
-
-# install a good font
-paru -S ttf-fira-code
-
-# Widgets and bar
-paru -S quickshell
+paru -S dunst ttf-fira-code quickshell 2>&1 | dialog --progressbox 30 100
